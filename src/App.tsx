@@ -59,7 +59,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/apply" element={<UserApplicationForm user={user} />} />
             <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard isAdmin={isAdmin} />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/certificate/:certificateId" element={<CertificateVerification />} />
           </Routes>
         </main>

@@ -16,10 +16,6 @@ import { format } from 'date-fns'
 import Certificate from '../components/Certificate'
 import { generateCertificatePDF } from '../utils/certificateUtils'
 
-interface AdminDashboardProps {
-  isAdmin: boolean
-}
-
 interface Application {
   id: string
   userId: string
@@ -41,7 +37,7 @@ interface Application {
   updatedAt: string
 }
 
-export default function AdminDashboard({ isAdmin }: AdminDashboardProps) {
+export default function AdminDashboard() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [applications, setApplications] = useState<Application[]>([])
@@ -50,6 +46,7 @@ export default function AdminDashboard({ isAdmin }: AdminDashboardProps) {
   const [editMode, setEditMode] = useState(false)
   const [editData, setEditData] = useState<Partial<Application>>({})
   const [filter, setFilter] = useState('all')
+  const [isAdmin, setIsAdmin] = useState(false)
 
   const loadApplications = useCallback(async () => {
     try {
@@ -71,12 +68,37 @@ export default function AdminDashboard({ isAdmin }: AdminDashboardProps) {
   }, [toast])
 
   useEffect(() => {
-    if (!isAdmin) {
-      navigate('/admin')
-      return
+    // Check admin session
+    const checkAdminSession = () => {
+      const adminSession = localStorage.getItem('adminSession')
+      if (!adminSession) {
+        navigate('/admin')
+        return false
+      }
+      
+      try {
+        const session = JSON.parse(adminSession)
+        // Check if session is still valid (24 hours)
+        const sessionAge = Date.now() - session.loginTime
+        if (sessionAge > 24 * 60 * 60 * 1000) {
+          localStorage.removeItem('adminSession')
+          navigate('/admin')
+          return false
+        }
+        
+        setIsAdmin(true)
+        return true
+      } catch (error) {
+        localStorage.removeItem('adminSession')
+        navigate('/admin')
+        return false
+      }
     }
-    loadApplications()
-  }, [isAdmin, navigate, loadApplications])
+
+    if (checkAdminSession()) {
+      loadApplications()
+    }
+  }, [navigate, loadApplications])
 
   const handleStatusChange = async (applicationId: string, newStatus: string) => {
     try {
@@ -222,9 +244,20 @@ export default function AdminDashboard({ isAdmin }: AdminDashboardProps) {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <Shield className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <Shield className="h-8 w-8 text-blue-600" />
+              <h1 className="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => {
+                localStorage.removeItem('adminSession')
+                navigate('/admin')
+              }}
+            >
+              Logout
+            </Button>
           </div>
           <p className="text-lg text-slate-600">
             Manage certificate applications, review submissions, and approve certificates.
