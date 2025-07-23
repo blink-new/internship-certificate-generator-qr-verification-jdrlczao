@@ -18,6 +18,8 @@ import {
   Clock
 } from 'lucide-react'
 import { format } from 'date-fns'
+import Certificate from '../components/Certificate'
+import { generateCertificatePDF } from '../utils/certificateUtils'
 
 interface CertificateData {
   id: string
@@ -79,6 +81,24 @@ export default function CertificateVerification() {
       loadCertificate(certificateId)
     }
   }, [certificateId])
+
+  const handleDownloadPDF = async () => {
+    if (!certificate) return
+    
+    try {
+      const certificateElement = document.getElementById('certificate-for-verification')
+      if (!certificateElement) {
+        alert('Certificate element not found. Please try again.')
+        return
+      }
+
+      const fileName = `${certificate.name.replace(/\s+/g, '_')}_Certificate.pdf`
+      await generateCertificatePDF(certificateElement, fileName)
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      alert('Failed to generate PDF. Please try again.')
+    }
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -275,6 +295,36 @@ export default function CertificateVerification() {
             </Card>
           )}
 
+          {/* Certificate Preview */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Official Certificate</span>
+                <Button
+                  onClick={handleDownloadPDF}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF
+                </Button>
+              </CardTitle>
+              <CardDescription>
+                Official internship completion certificate with QR verification
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="border rounded-lg p-4 bg-white">
+                <div id="certificate-for-verification">
+                  <Certificate 
+                    application={certificate} 
+                    showQR={false}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Certificate Metadata */}
           <Card>
             <CardHeader>
@@ -311,7 +361,7 @@ export default function CertificateVerification() {
                     onClick={() => window.print()}
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Print Certificate
+                    Print Page
                   </Button>
                   
                   <Button

@@ -47,12 +47,23 @@ export default function AdminLogin() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 mb-2">
               <Lock className="h-4 w-4 text-amber-600" />
               <p className="text-sm text-amber-800">
                 <strong>Admin Access Only:</strong> This area is restricted to authorized administrators.
               </p>
             </div>
+          </div>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-blue-900 mb-2">Demo Admin Credentials:</h3>
+            <div className="text-sm text-blue-800 space-y-1">
+              <p><strong>Email:</strong> admin@tadcs.in</p>
+              <p><strong>Password:</strong> admin123</p>
+            </div>
+            <p className="text-xs text-blue-600 mt-2">
+              Use these credentials to access the admin dashboard for testing purposes.
+            </p>
           </div>
           
           <Button 

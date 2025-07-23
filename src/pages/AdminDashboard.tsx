@@ -11,8 +11,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { blink } from '@/blink/client'
-import { Shield, Eye, Edit, Check, X, Trash2, Download, Users, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { Shield, Eye, Edit, Check, X, Trash2, Download, Users, Clock, CheckCircle, XCircle, QrCode } from 'lucide-react'
 import { format } from 'date-fns'
+import Certificate from '../components/Certificate'
+import { generateCertificatePDF } from '../utils/certificateUtils'
 
 interface AdminDashboardProps {
   isAdmin: boolean
@@ -152,6 +154,35 @@ export default function AdminDashboard({ isAdmin }: AdminDashboardProps) {
       toast({
         title: "Error",
         description: "Failed to delete application.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleDownloadPDF = async (application: Application) => {
+    try {
+      const certificateElement = document.getElementById('certificate-for-pdf')
+      if (!certificateElement) {
+        toast({
+          title: "Error",
+          description: "Certificate element not found. Please try again.",
+          variant: "destructive"
+        })
+        return
+      }
+
+      const fileName = `${application.name.replace(/\s+/g, '_')}_Certificate.pdf`
+      await generateCertificatePDF(certificateElement, fileName)
+      
+      toast({
+        title: "PDF Downloaded",
+        description: "Certificate PDF has been downloaded successfully.",
+      })
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF. Please try again.",
         variant: "destructive"
       })
     }
@@ -563,6 +594,42 @@ export default function AdminDashboard({ isAdmin }: AdminDashboardProps) {
                                         <p className="text-sm text-slate-600 mt-1">{selectedApp.additionalNotes || 'Not specified'}</p>
                                       )}
                                     </div>
+
+                                    {/* Certificate Preview */}
+                                    {selectedApp.status === 'approved' && selectedApp.certificateId && !editMode && (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                          <h3 className="text-lg font-semibold">Certificate Preview</h3>
+                                          <div className="flex space-x-2">
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => handleDownloadPDF(selectedApp)}
+                                            >
+                                              <Download className="h-4 w-4 mr-1" />
+                                              Download PDF
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => window.open(`/certificate/${selectedApp.certificateId}`, '_blank')}
+                                            >
+                                              <QrCode className="h-4 w-4 mr-1" />
+                                              View QR Page
+                                            </Button>
+                                          </div>
+                                        </div>
+                                        <div className="border rounded-lg p-4 bg-white">
+                                          <div id="certificate-for-pdf">
+                                            <Certificate 
+                                              application={selectedApp} 
+                                              showQR={true}
+                                              className="scale-50 origin-top-left"
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
 
                                     {editMode && (
                                       <div className="flex justify-end space-x-4 pt-4">
