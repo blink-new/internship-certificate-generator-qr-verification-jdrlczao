@@ -55,10 +55,13 @@ export default function AdminLogin() {
       }
 
       const admin = adminUsers[0]
+      console.log('Admin user found:', admin)
+      console.log('Entered password:', password)
+      console.log('Admin password:', admin.password)
       
       // For demo purposes, we'll check against the stored password
       // In production, you'd want to hash passwords
-      if (admin.password !== password) {
+      if (!admin.password || admin.password !== password) {
         setError('Invalid admin credentials')
         setLoading(false)
         return
